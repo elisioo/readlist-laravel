@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('description');
             $table->string('author');
+            $table->enum('status', ['To Read', 'Unread', 'Ongoing', 'Done'])->default('To Read');
             $table->timestamps();
         });
     }

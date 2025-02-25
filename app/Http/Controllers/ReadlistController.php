@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\readlist;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\Response; 
+use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
 
 class ReadlistController extends Controller
 {
@@ -34,13 +35,14 @@ class ReadlistController extends Controller
     {
         $validate = $request->validate([
             'title' => 'required|string|max:100',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string',
             'author' => 'required|string|max:100',
+            'status' => 'required|in:To Read,Unread,Ongoing,Done'
         ]);
-    
-        // Save the book to the authenticated user's readlist
+
+
         $request->user()->readlists()->create($validate);
-    
+
         return redirect()->route('readlist.index')->with('success', 'Book added to your readlist!');
     }
 
@@ -63,9 +65,22 @@ class ReadlistController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, readlist $readlist)
+    public function update(Request $request, Readlist $readlist): RedirectResponse
     {
-        //
+        if (auth()->id() !== $readlist->user_id) {
+            return redirect()->route('readlist.index')->with('error', 'Unauthorized action.');
+        }
+
+        $validate = $request->validate([
+            'title' => 'required|string|max:100',
+            'description' => 'required|string',
+            'author' => 'required|string|max:100',
+            'status' => 'required|in:To Read,Unread,Ongoing,Done'
+        ]);
+
+        $readlist->update($validate);
+
+        return redirect()->route('readlist.index')->with('success', 'Book details updated successfully!');
     }
 
     /**
@@ -76,9 +91,9 @@ class ReadlistController extends Controller
         if (auth()->id() !== $readlist->user_id) {
             return redirect()->route('readlist.index')->with('error', 'Unauthorized action.');
         }
-    
+
         $readlist->delete(); // Delete the book entry
-    
+
         return redirect()->route('readlist.index')->with('success', 'Book removed from your readlist.');
     }
 }

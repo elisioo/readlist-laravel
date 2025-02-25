@@ -1,6 +1,10 @@
 <x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('📚 My Reading List') }}
+        </h2>
+    </x-slot>
     <div class="container mt-4">
-        <h1 class="mb-4 text-center h3">📚 My Reading List</h1>
 
         <!-- Add New Book Button -->
         <div class="mb-3 text-end">
@@ -11,53 +15,63 @@
 
         <!-- Books Table -->
         <div class="table-responsive">
-            <table class="table shadow-md table-bordered table-hover"
-                    style="border-radius: 10px !important;">
+            <table class="table shadow-md table-bordered table-hover">
                 <thead class="table-dark">
                     <tr class="text-center">
                         <th>Title</th>
                         <th>Description</th>
                         <th>Author</th>
-                        <th >Actions</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if ($readlists->count())
-                        @foreach ($readlists as $row)
-                            @if ($row->user_id == Auth::id())
-                                <tr>
-                                    <td>{{ $row->title }}</td>
-                                    <td>{{ $row->description }}</td>
-                                    <td>{{ $row->author }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                           
-                                            <button class="shadow-none btn btn-sm" style="color:rgb(255, 153, 0);"
-                                                data-id="{{ $row->id }}" 
-                                                data-title="{{ $row->title }}" 
-                                                data-description="{{ $row->description }}" 
-                                                data-author="{{ $row->author }}" 
-                                                onclick="openEditPopup(this)">
-                                                <i class="fa-solid fa-pen-to-square"></i> Edit
-                                            </button>
+                    @foreach ($readlists as $row)
+                    @if ($row->user_id == Auth::id())
+                    <tr class="text-center">
+                        <td>{{ $row->title }}</td>
+                        <td>{{ $row->description }}</td>
+                        <td>{{ $row->author }}</td>
+                        <td>
+                            @php
+                            $badgeClass = match ($row->status) {
+                            'To Read' => 'bg-primary',
+                            'Unread' => 'bg-secondary',
+                            'Ongoing' => 'bg-warning text-dark',
+                            'Done' => 'bg-success',
+                            default => 'bg-dark',
+                            };
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">{{ $row->status }}</span>
+                        </td>
 
-                                    
-                                            <form action="{{ route('readlist.destroy', $row->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this book?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm" style="color: red;">
-                                                <i class="fa-solid fa-trash" style="color:rgb(255, 0, 0);"></i> Delete
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
+                        <td style="width: 20px;">
+                            <div class="btn-group" role="group">
+                                <button class="shadow-none btn btn-sm" style="color:rgb(255, 153, 0);"
+                                    data-id="{{ $row->id }}" data-title="{{ $row->title }}"
+                                    data-description="{{ $row->description }}" data-author="{{ $row->author }}"
+                                    data-status="{{ $row->status }}" onclick="openEditPopup(this)">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                                </button>
+
+                                <form action="{{ route('readlist.destroy', $row->id) }}" method="POST"
+                                    onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm text-danger">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @endif
+                    @endforeach
                     @else
-                        <tr>
-                            <td colspan="4" class="text-center">No books found.</td>
-                        </tr>
+                    <tr>
+                        <td colspan="5" class="text-center">No books found.</td>
+                    </tr>
                     @endif
                 </tbody>
             </table>
@@ -77,15 +91,26 @@
                         @csrf
                         <div class="mb-3">
                             <label for="title" class="form-label">Book Title</label>
-                            <input type="text" class="form-control" name="title" placeholder="Book Title" required>
+                            <input type="text" class="form-control" name="title" placeholder="Book Title" required
+                                maxlength="255">
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" name="description" placeholder="Description" required></textarea>
+                            <textarea class="form-control" rows="3" name="description" placeholder="Description"
+                                required></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="author" class="form-label">Author</label>
                             <input type="text" class="form-control" name="author" placeholder="Author" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" name="status" required>
+                                <option value="To Read">To Read</option>
+                                <option value="Unread">Unread</option>
+                                <option value="Ongoing">Ongoing</option>
+                                <option value="Done">Done</option>
+                            </select>
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Add Book</button>
@@ -113,17 +138,26 @@
 
                         <div class="mb-3">
                             <label for="editTitle" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="editTitle" name="title" placeholder="Title" required>
+                            <input type="text" class="form-control" id="editTitle" name="title" required>
                         </div>
                         <div class="mb-3">
                             <label for="editDescription" class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" id="editDescription" name="description" placeholder="Description" required></textarea>
+                            <textarea class="form-control" rows="3" id="editDescription" name="description"
+                                required></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="editAuthor" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="editAuthor" name="author" placeholder="Author" required>
+                            <input type="text" class="form-control" id="editAuthor" name="author" required>
                         </div>
-
+                        <div class="mb-3">
+                            <label for="editStatus" class="form-label">Status</label>
+                            <select class="form-control" id="editStatus" name="status">
+                                <option value="To Read">To Read</option>
+                                <option value="Unread">Unread</option>
+                                <option value="Ongoing">Ongoing</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-success">Save Changes</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -135,20 +169,17 @@
     </div>
 
     <script>
-        function openEditPopup(button) {
-            document.getElementById("editBookId").value = button.dataset.id;
-            document.getElementById("editTitle").value = button.dataset.title;
-            document.getElementById("editDescription").value = button.dataset.description;
-            document.getElementById("editAuthor").value = button.dataset.author;
-        
-            document.getElementById("editForm").action = `/readlist/${button.dataset.id}`;
-            
-            // Open the modal
-            var editModal = new bootstrap.Modal(document.getElementById('editBookModal'));
-            editModal.show();
-        }
-    </script>
+    function openEditPopup(button) {
+        document.getElementById("editBookId").value = button.dataset.id;
+        document.getElementById("editTitle").value = button.dataset.title;
+        document.getElementById("editDescription").value = button.dataset.description;
+        document.getElementById("editAuthor").value = button.dataset.author;
+        document.getElementById("editStatus").value = button.dataset.status;
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        document.getElementById("editForm").action = "{{ url('/readlist') }}/" + button.dataset.id;
+
+        var editModal = new bootstrap.Modal(document.getElementById('editBookModal'));
+        editModal.show();
+    }
+    </script>
 </x-app-layout>

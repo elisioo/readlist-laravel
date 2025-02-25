@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class readlist extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
-        'title', 'description', 'author'
+        'title',
+        'description',
+        'author',
+        'status'
     ];
 
     public function user(): BelongsTo
