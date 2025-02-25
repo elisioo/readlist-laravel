@@ -32,7 +32,7 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                            
-                                            <button class="btn btn-sm" style="color:rgb(255, 153, 0);"
+                                            <button class="shadow-none btn btn-sm" style="color:rgb(255, 153, 0);"
                                                 data-id="{{ $row->id }}" 
                                                 data-title="{{ $row->title }}" 
                                                 data-description="{{ $row->description }}" 
@@ -42,9 +42,13 @@
                                             </button>
 
                                     
-                                            <a href="{{ route('readlist.destroy', $row->id) }}" class="btn btn-sm text-danger" onclick="return confirm('Are you sure?')">
+                                            <form action="{{ route('readlist.destroy', $row->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm" style="color: red;">
                                                 <i class="fa-solid fa-trash" style="color:rgb(255, 0, 0);"></i> Delete
-                                            </a>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

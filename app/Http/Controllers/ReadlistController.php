@@ -73,6 +73,12 @@ class ReadlistController extends Controller
      */
     public function destroy(readlist $readlist)
     {
-        //
+        if (auth()->id() !== $readlist->user_id) {
+            return redirect()->route('readlist.index')->with('error', 'Unauthorized action.');
+        }
+    
+        $readlist->delete(); // Delete the book entry
+    
+        return redirect()->route('readlist.index')->with('success', 'Book removed from your readlist.');
     }
 }
