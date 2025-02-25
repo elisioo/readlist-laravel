@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -44,8 +43,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function chirps(): HasMany
+    /**
+     * Relationship: A user has many readlist items
+     */
+    public function readlists(): HasMany
     {
-        return $this->hasMany(readlist::class);
+        return $this->hasMany(ReadList::class);
     }
 }

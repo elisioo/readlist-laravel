@@ -11,7 +11,7 @@ class readlist extends Model
     use HasFactory;
     
     protected $fillable = [
-        'message',
+        'title', 'description', 'author'
     ];
 
     public function user(): BelongsTo

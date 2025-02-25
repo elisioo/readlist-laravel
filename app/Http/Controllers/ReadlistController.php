@@ -32,7 +32,16 @@ class ReadlistController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validate = $request->validate([
+            'title' => 'required|string|max:100',
+            'description' => 'required|string|max:255',
+            'author' => 'required|string|max:100',
+        ]);
+    
+        // Save the book to the authenticated user's readlist
+        $request->user()->readlists()->create($validate);
+    
+        return redirect()->route('readlist.index')->with('success', 'Book added to your readlist!');
     }
 
     /**
